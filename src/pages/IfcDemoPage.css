@@ -1,0 +1,88 @@
+/* Styles for IfcDemoPage - modern, responsive tabbed UI */
+.ifc-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  background: radial-gradient(ellipse at 10% 10%, rgba(3,102,214,0.08), transparent 15%), linear-gradient(135deg, #f6f9ff 0%, #fffefe 100%);
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+
+.ifc-card {
+  width: 100%;
+  max-width: 1100px;
+  background: rgba(255,255,255,0.9);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(16,24,40,0.08);
+  padding: 28px;
+  border: 1px solid rgba(13, 38, 86, 0.04);
+}
+
+.ifc-heading {
+  margin: 0 0 18px 0;
+  text-align: center;
+  font-size: 1.6rem;
+  letter-spacing: 0.2px;
+  background: linear-gradient(90deg,#0b67d1,#5b9cff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ifc-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.ifc-tab {
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(6, 24, 69, 0.06);
+  background: transparent;
+  color: #0f1724;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 180ms cubic-bezier(.2,.9,.2,1);
+  position: relative;
+  box-shadow: 0 2px 6px rgba(16,24,40,0.03);
+}
+
+.ifc-tab:hover { transform: translateY(-2px); }
+
+.ifc-tab.active {
+  background: linear-gradient(90deg,#0366d6,#2ea6ff);
+  color: #fff;
+  transform: translateY(-2px) scale(1.02);
+}
+
+.ifc-tab.active::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -10px;
+  width: 36px;
+  height: 4px;
+  border-radius: 4px;
+  background: linear-gradient(90deg,#ffd36b,#ff7ab6);
+  box-shadow: 0 6px 18px rgba(3,102,214,0.12);
+}
+
+.ifc-chart-area {
+  padding: 18px;
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive tweaks */
+@media (max-width: 640px) {
+  .ifc-card { padding: 18px; }
+  .ifc-heading { font-size: 1.25rem; }
+  .ifc-tabs { gap: 8px; }
+  .ifc-tab { padding: 7px 12px; font-size: 0.95rem; }
+}

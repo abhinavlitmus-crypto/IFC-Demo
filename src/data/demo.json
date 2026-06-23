@@ -1,0 +1,44 @@
+[
+  {
+    "state": "Andhra Pradesh",
+    "sub_indicator": "Households using clean fuel for cooking (%)",
+    "sector": "Rural + Urban (Combined)",
+    "survey": "nfhs-4",
+    "value": 62
+  },
+  {
+    "state": "Andhra Pradesh",
+    "sub_indicator": "Households using clean fuel for cooking (%)",
+    "sector": "Rural",
+    "survey": "nfhs-4",
+    "value": 49.7
+  },
+  {
+    "state": "Andhra Pradesh",
+    "sub_indicator": "Households using clean fuel for cooking (%)",
+    "sector": "Urban",
+    "survey": "nfhs-4",
+    "value": 89.7
+  },
+  {
+    "state": "Andhra Pradesh",
+    "sub_indicator": "Households using clean fuel for cooking (%)",
+    "sector": "Urban",
+    "survey": "nfhs-5",
+    "value": 96.57
+  },
+  {
+    "state": "Andhra Pradesh",
+    "sub_indicator": "Households using clean fuel for cooking (%)",
+    "sector": "Rural",
+    "survey": "nfhs-5",
+    "value": 77.91
+  },
+  {
+    "state": "Andhra Pradesh",
+    "sub_indicator": "Households using clean fuel for cooking (%)",
+    "sector": "Rural + Urban (Combined)",
+    "survey": "nfhs-5",
+    "value": 83.62
+  }
+]
