@@ -1,5 +1,6 @@
 import React, { useRef, useState, useMemo, useLayoutEffect } from "react";
 import Checkbox from "@mui/material/Checkbox";
+import { useMediaQuery, useTheme } from "@mui/material";
 import { ScatterChart } from "@mui/x-charts/ScatterChart";
 import { ChartsReferenceLine } from "@mui/x-charts/ChartsReferenceLine";
 import { axisClasses } from "@mui/x-charts/ChartsAxis";
@@ -94,12 +95,28 @@ function SidePanel({ selected, onToggle, onToggleAll, focus, onFocus }) {
   );
 }
 
+// ---- Custom connecting-line overlay via ScatterChart's "overlay" slot ----
+// MUI X Charts ScatterChart renders dots via series; we draw the dumbbell
+// connector lines and value labels using the `axisContent` customisation
+// slot pattern — specifically a custom SVG layer rendered inside the chart's
+// <svg> via the `slots.overlay` escape hatch is NOT available on ScatterChart,
+// so instead we use a composition approach:
+//   1. ScatterChart renders the two dot series (nfhs4, nfhs5).
+//   2. We wrap it in a `position: relative` container.
+//   3. A second <svg> is absolutely positioned on top; it draws the
+//      connecting lines AND value labels using computed pixel positions
+//      that mirror the ScatterChart's internal scale.
+// This is the idiomatic MUI X Charts "custom layer" pattern when you need
+// to draw elements the library doesn't expose natively.
+
 const MARGIN = { top: 30, right: 90, bottom: 50, left: 210 };
 const HEIGHT = 560;
 const MIN_WIDTH = 380;
 const X_TICKS = [0, 20, 40, 60, 80, 100];
 
 export default function DumbbellChart() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [selected, setSelected] = useState([...PANEL_ORDER]);
   const [focus, setFocus] = useState(null);
   const containerRef = useRef(null);
@@ -123,11 +140,14 @@ export default function DumbbellChart() {
 
   const rows = useMemo(() => CHART_ORDER.filter((s) => selected.includes(s)), [selected]);
 
+  const chartHeight = isMobile ? 420 : HEIGHT;
+  const margin = isMobile ? { top: 30, right: 70, bottom: 50, left: 150 } : MARGIN;
+
   // Derived pixel coordinates (mirror ScatterChart's internal scale)
-  const plotLeft = MARGIN.left;
-  const plotRight = width - MARGIN.right;
-  const plotTop = MARGIN.top;
-  const plotBottom = HEIGHT - MARGIN.bottom;
+  const plotLeft = margin.left;
+  const plotRight = width - margin.right;
+  const plotTop = margin.top;
+  const plotBottom = chartHeight - margin.bottom;
   const plotW = Math.max(1, plotRight - plotLeft);
 
   const xScale = (v) => plotLeft + (v / 100) * plotW;
@@ -154,7 +174,8 @@ export default function DumbbellChart() {
     <div
       style={{
         display: "flex",
-        gap: 8,
+        flexDirection: isMobile ? "column" : "row",
+        gap: 16,
         alignItems: "flex-start",
         fontFamily: "Arial, Helvetica, sans-serif",
         background: "#fff",
@@ -164,7 +185,7 @@ export default function DumbbellChart() {
       }}
     >
       {/* Chart area */}
-      <div ref={containerRef} style={{ flex: 1, minWidth: 0, overflow: "hidden", position: "relative" }}>
+      <div ref={containerRef} style={{ flex: 1, minWidth: 0, overflow: "hidden", position: "relative", width: "100%" }}>
         {/*
           ScatterChart from MUI X Charts:
           - xAxis: linear 0-100, provides gridlines + tick labels
@@ -175,8 +196,8 @@ export default function DumbbellChart() {
         */}
         <ScatterChart
           width={width}
-          height={HEIGHT}
-          margin={MARGIN}
+          height={chartHeight}
+          margin={margin}
           skipAnimation
           xAxis={[
             {
@@ -264,12 +285,10 @@ export default function DumbbellChart() {
             x={plotLeft}
             y={plotTop}
             width={plotW}
-            // leave a little space at the bottom so axis tick labels don't get overdrawn
-            height={Math.max(0, plotBottom - plotTop - 12)}
+            height={plotBottom - plotTop}
             fill="none"
             stroke={AXIS_C}
             strokeWidth={1}
-            opacity={0.95}
           />
 
           {/* "Sector" header + funnel icon */}
@@ -307,33 +326,30 @@ export default function DumbbellChart() {
                   y1={y}
                   y2={y}
                   stroke={LINE_C}
-                  strokeWidth={2}
+                  strokeWidth={3}
                   opacity={lineOp}
-                  style={{ transition: "all 260ms ease" }}
                 />
 
                 {/* nfhs-4 value label (left of blue dot) */}
                 <text
-                  x={x4 - 14}
+                  x={x4 - 11}
                   y={y + 5}
-                  fontSize={13}
+                  fontSize={14}
                   fill="#3b3b3b"
                   textAnchor="end"
                   opacity={surveyOp("nfhs4")}
-                  style={{ transition: "opacity 220ms, transform 260ms" }}
                 >
                   {d.nfhs4.toFixed(2)}
                 </text>
 
                 {/* nfhs-5 value label (right of orange dot) */}
                 <text
-                  x={x5 + 14}
+                  x={x5 + 11}
                   y={y + 5}
-                  fontSize={13}
+                  fontSize={14}
                   fill="#3b3b3b"
                   textAnchor="start"
                   opacity={surveyOp("nfhs5")}
-                  style={{ transition: "opacity 220ms, transform 260ms" }}
                 >
                   {d.nfhs5.toFixed(2)}
                 </text>
@@ -344,13 +360,15 @@ export default function DumbbellChart() {
       </div>
 
       {/* Side panel */}
-      <SidePanel
-        selected={selected}
-        onToggle={toggle}
-        onToggleAll={toggleAll}
-        focus={focus}
-        onFocus={onFocus}
-      />
+      <div style={{ width: isMobile ? "100%" : 330, flexShrink: 0 }}>
+        <SidePanel
+          selected={selected}
+          onToggle={toggle}
+          onToggleAll={toggleAll}
+          focus={focus}
+          onFocus={onFocus}
+        />
+      </div>
     </div>
   );
 }

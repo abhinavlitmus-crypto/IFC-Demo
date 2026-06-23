@@ -5,6 +5,8 @@ import {
   MenuItem,
   Select,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { useDrawingArea, useYScale } from "@mui/x-charts/hooks";
@@ -136,6 +138,8 @@ function Overlay({ sectors }) {
 }
 
 export default function SectorBarChart({ height = 620 }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [sector, setSector] = React.useState("all");
   const [survey, setSurvey] = React.useState("nfhs-4");
 
@@ -149,10 +153,13 @@ export default function SectorBarChart({ height = 620 }) {
           return true;
         });
 
+  const chartHeight = isMobile ? 420 : height;
+
   return (
     <Box
       sx={{
         display: "flex",
+        flexDirection: isMobile ? "column" : "row",
         gap: 2,
         width: "100%",
       }}
@@ -172,10 +179,10 @@ export default function SectorBarChart({ height = 620 }) {
         </Typography>
 
         <BarChart
-          height={height}
+          height={chartHeight}
           margin={{
-            left: 64,
-            right: 20,
+            left: isMobile ? 40 : 64,
+            right: isMobile ? 20 : 20,
             top: 60,
             bottom: 40,
           }}
@@ -245,7 +252,7 @@ export default function SectorBarChart({ height = 620 }) {
       {/* Filters Panel */}
       <Box
         sx={{
-          width: 320,
+          width: isMobile ? "100%" : 320,
           border: "1px solid #dcdcdc",
           background: "#fff",
           p: 1,

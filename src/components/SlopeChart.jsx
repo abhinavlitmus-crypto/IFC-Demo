@@ -5,6 +5,8 @@ import {
   MenuItem,
   Select,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { useXScale, useYScale } from "@mui/x-charts/hooks";
@@ -67,6 +69,8 @@ function ValueLabels({ series }) {
 }
 
 export default function SlopeChart({ height = 560 }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [sector, setSector] = React.useState("all");
 
   const filteredSeries =
@@ -78,12 +82,13 @@ export default function SlopeChart({ height = 560 }) {
     <Box
       sx={{
         display: "flex",
+        flexDirection: isMobile ? "column" : "row",
         gap: 2,
         width: "100%",
       }}
     >
       {/* Chart */}
-      <Box sx={{ flex: 1 }}>
+      <Box sx={{ flex: 1, width: "100%" }}>
         <Typography
           align="center"
           sx={{
@@ -96,10 +101,10 @@ export default function SlopeChart({ height = 560 }) {
         </Typography>
 
         <LineChart
-          height={height}
+          height={isMobile ? 420 : height}
           margin={{
-            left: 70,
-            right: 70,
+            left: isMobile ? 60 : 70,
+            right: isMobile ? 40 : 70,
             top: 20,
             bottom: 40,
           }}
@@ -152,7 +157,7 @@ export default function SlopeChart({ height = 560 }) {
       {/* Filter Panel */}
       <Box
         sx={{
-          width: 260,
+          width: isMobile ? "100%" : 260,
           border: "1px solid #ddd",
           p: 1.5,
           height: "fit-content",

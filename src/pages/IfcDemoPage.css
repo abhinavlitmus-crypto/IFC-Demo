@@ -80,9 +80,39 @@
 }
 
 /* Responsive tweaks */
+@media (max-width: 900px) {
+  .ifc-card {
+    padding: 18px;
+    margin: 0 12px;
+  }
+  .ifc-tabs {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .ifc-tab {
+    flex: 1 1 110px;
+    min-width: 100px;
+    padding: 8px 12px;
+    font-size: 0.95rem;
+  }
+  .ifc-chart-area {
+    padding: 12px;
+    min-height: auto;
+  }
+}
+
 @media (max-width: 640px) {
-  .ifc-card { padding: 18px; }
-  .ifc-heading { font-size: 1.25rem; }
-  .ifc-tabs { gap: 8px; }
-  .ifc-tab { padding: 7px 12px; font-size: 0.95rem; }
+  .ifc-page {
+    padding: 24px 12px;
+  }
+  .ifc-heading {
+    font-size: 1.2rem;
+  }
+  .ifc-tabs {
+    gap: 8px;
+  }
+  .ifc-tab {
+    padding: 7px 10px;
+    font-size: 0.92rem;
+  }
 }
