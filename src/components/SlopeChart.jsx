@@ -50,11 +50,12 @@ function ValueLabels({ series }) {
           if (cx == null || cy == null) return null;
 
           const isLeft = i === 0;
+          const xOffset = isLeft ? -18 : 18;
 
           return (
             <text
               key={`${s.id}-${i}`}
-              x={isLeft ? cx - 15 : cx + 15}
+              x={isLeft ? cx + xOffset : cx + xOffset}
               y={cy + 5}
               fontSize={14}
               fill={VALUE_TXT}
@@ -82,11 +83,82 @@ export default function SlopeChart({ height = 560 }) {
     <Box
       sx={{
         display: "flex",
-        flexDirection: isMobile ? "column" : "row",
+        flexDirection: "column",
         gap: 2,
         width: "100%",
       }}
     >
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 2,
+          alignItems: "center",
+          justifyContent: "space-between",
+          width: "100%",
+        }}
+      >
+        <Box sx={{ minWidth: 240, flex: "1 1 240px" }}>
+          <Typography
+            sx={{
+              fontSize: 14,
+              mb: 1,
+              color: "#444",
+            }}
+          >
+            Sector
+          </Typography>
+
+          <FormControl fullWidth size="small">
+            <Select
+              value={sector}
+              onChange={(e) => setSector(e.target.value)}
+            >
+              <MenuItem value="all">(All)</MenuItem>
+              <MenuItem value="rural">Rural</MenuItem>
+              <MenuItem value="combined">
+                Rural + Urban (Combined)
+              </MenuItem>
+              <MenuItem value="urban">Urban</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 1,
+            alignItems: "center",
+            justifyContent: "flex-end",
+            flex: "1 1 320px",
+          }}
+        >
+          {filteredSeries.map((item) => (
+            <Box
+              key={item.id}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                p: 1,
+                borderRadius: 1,
+                bgcolor: "#f8f9fb",
+              }}
+            >
+              <Box
+                sx={{
+                  width: 14,
+                  height: 14,
+                  backgroundColor: item.color,
+                }}
+              />
+              <Typography variant="body2">{item.label}</Typography>
+            </Box>
+          ))}
+        </Box>
+      </Box>
+
       {/* Chart */}
       <Box sx={{ flex: 1, width: "100%" }}>
         <Typography
@@ -103,8 +175,8 @@ export default function SlopeChart({ height = 560 }) {
         <LineChart
           height={isMobile ? 420 : height}
           margin={{
-            left: isMobile ? 60 : 70,
-            right: isMobile ? 40 : 70,
+            left: isMobile ? 70 : 60,
+            right: isMobile ? 50 : 60,
             top: 20,
             bottom: 40,
           }}
@@ -154,74 +226,6 @@ export default function SlopeChart({ height = 560 }) {
         </LineChart>
       </Box>
 
-      {/* Filter Panel */}
-      <Box
-        sx={{
-          width: isMobile ? "100%" : 260,
-          border: "1px solid #ddd",
-          p: 1.5,
-          height: "fit-content",
-        }}
-      >
-        <Typography
-          sx={{
-            fontSize: 14,
-            mb: 1,
-            color: "#444",
-          }}
-        >
-          Sector
-        </Typography>
-
-        <FormControl fullWidth size="small">
-          <Select
-            value={sector}
-            onChange={(e) => setSector(e.target.value)}
-          >
-            <MenuItem value="all">(All)</MenuItem>
-            <MenuItem value="rural">Rural</MenuItem>
-            <MenuItem value="combined">
-              Rural + Urban (Combined)
-            </MenuItem>
-            <MenuItem value="urban">Urban</MenuItem>
-          </Select>
-        </FormControl>
-
-        <Box mt={3}>
-          <Typography
-            sx={{
-              mb: 1,
-              fontSize: 14,
-              color: "#444",
-            }}
-          >
-            Sector
-          </Typography>
-
-          {filteredSeries.map((item) => (
-            <Box
-              key={item.id}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                mb: 1,
-              }}
-            >
-              <Box
-                sx={{
-                  width: 14,
-                  height: 14,
-                  backgroundColor: item.color,
-                }}
-              />
-              <Typography variant="body2">
-                {item.label}
-              </Typography>
-            </Box>
-          ))}
-        </Box>
-      </Box>
     </Box>
   );
 }

@@ -159,13 +159,114 @@ export default function SectorBarChart({ height = 620 }) {
     <Box
       sx={{
         display: "flex",
-        flexDirection: isMobile ? "column" : "row",
+        flexDirection: "column",
         gap: 2,
         width: "100%",
       }}
     >
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 2,
+          alignItems: "center",
+          justifyContent: "space-between",
+          width: "100%",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 2,
+            alignItems: "center",
+            flex: "1 1 0",
+          }}
+        >
+          <Box sx={{ minWidth: 220, flex: "1 1 220px" }}>
+            <Typography
+              sx={{
+                fontSize: 14,
+                mb: 1,
+                color: "#444",
+              }}
+            >
+              Sector
+            </Typography>
+
+            <FormControl fullWidth size="small">
+              <Select
+                value={sector}
+                onChange={(e) => setSector(e.target.value)}
+              >
+                <MenuItem value="all">(All)</MenuItem>
+                <MenuItem value="rural">Rural</MenuItem>
+                <MenuItem value="combined">Rural + Urban (Combined)</MenuItem>
+                <MenuItem value="urban">Urban</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+
+          <Box sx={{ minWidth: 180, flex: "1 1 180px" }}>
+            <Typography
+              sx={{
+                fontSize: 14,
+                mb: 1,
+                color: "#444",
+              }}
+            >
+              Survey
+            </Typography>
+
+            <FormControl fullWidth size="small">
+              <Select
+                value={survey}
+                onChange={(e) => setSurvey(e.target.value)}
+              >
+                <MenuItem value="nfhs-4">nfhs-4</MenuItem>
+                <MenuItem value="nfhs-5">nfhs-5</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 1,
+            alignItems: "center",
+            justifyContent: "flex-end",
+            flex: "1 1 260px",
+          }}
+        >
+          {sectors.map((item) => (
+            <Box
+              key={item.id}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                p: 1,
+                borderRadius: 1,
+                bgcolor: "#f8f9fb",
+              }}
+            >
+              <Box
+                sx={{
+                  width: 14,
+                  height: 14,
+                  backgroundColor: item.color,
+                }}
+              />
+              <Typography variant="body2">{item.label}</Typography>
+            </Box>
+          ))}
+        </Box>
+      </Box>
+
       {/* Chart Area */}
-      <Box sx={{ flex: 1 }}>
+      <Box sx={{ flex: 1, width: "100%" }}>
         <Typography
           align="center"
           sx={{
@@ -181,8 +282,8 @@ export default function SectorBarChart({ height = 620 }) {
         <BarChart
           height={chartHeight}
           margin={{
-            left: isMobile ? 40 : 64,
-            right: isMobile ? 20 : 20,
+            left: isMobile ? 40 : 48,
+            right: isMobile ? 20 : 16,
             top: 60,
             bottom: 40,
           }}
@@ -198,9 +299,7 @@ export default function SectorBarChart({ height = 620 }) {
               data: sectors.map((s) => s.id),
               scaleType: "band",
               categoryGapRatio: 0.3,
-
               valueFormatter: () => survey,
-
               colorMap: {
                 type: "ordinal",
                 values: sectors.map((s) => s.id),
@@ -226,20 +325,16 @@ export default function SectorBarChart({ height = 620 }) {
             "& .MuiChartsAxis-line": {
               stroke: "#bdbdbd",
             },
-
             "& .MuiChartsAxis-tick": {
               stroke: "#bdbdbd",
             },
-
             "& .MuiChartsAxis-tickLabel": {
               fill: "#8a8a8a",
               fontSize: 13,
             },
-
             "& .MuiChartsAxis-label": {
               fill: "#5a5a5a",
             },
-
             "& .MuiChartsGrid-line": {
               stroke: "#ececec",
             },
@@ -247,100 +342,6 @@ export default function SectorBarChart({ height = 620 }) {
         >
           <Overlay sectors={sectors} />
         </BarChart>
-      </Box>
-
-      {/* Filters Panel */}
-      <Box
-        sx={{
-          width: isMobile ? "100%" : 320,
-          border: "1px solid #dcdcdc",
-          background: "#fff",
-          p: 1,
-          height: "fit-content",
-        }}
-      >
-        {/* Sector Filter */}
-        <Typography
-          sx={{
-            fontSize: 14,
-            mb: 1,
-            color: "#444",
-          }}
-        >
-          Sector
-        </Typography>
-
-        <FormControl fullWidth size="small">
-          <Select
-            value={sector}
-            onChange={(e) => setSector(e.target.value)}
-          >
-            <MenuItem value="all">(All)</MenuItem>
-            <MenuItem value="rural">Rural</MenuItem>
-            <MenuItem value="combined">
-              Rural + Urban (Combined)
-            </MenuItem>
-            <MenuItem value="urban">Urban</MenuItem>
-          </Select>
-        </FormControl>
-
-        {/* Survey Filter */}
-        <Typography
-          sx={{
-            fontSize: 14,
-            mt: 3,
-            mb: 1,
-            color: "#444",
-          }}
-        >
-          Survey
-        </Typography>
-
-        <FormControl fullWidth size="small">
-          <Select
-            value={survey}
-            onChange={(e) => setSurvey(e.target.value)}
-          >
-            <MenuItem value="nfhs-4">nfhs-4</MenuItem>
-            <MenuItem value="nfhs-5">nfhs-5</MenuItem>
-          </Select>
-        </FormControl>
-
-        {/* Legend */}
-        <Typography
-          sx={{
-            fontSize: 14,
-            mt: 3,
-            mb: 1,
-            color: "#444",
-          }}
-        >
-          Sector
-        </Typography>
-
-        {sectors.map((item) => (
-          <Box
-            key={item.id}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              mb: 1,
-            }}
-          >
-            <Box
-              sx={{
-                width: 14,
-                height: 14,
-                backgroundColor: item.color,
-              }}
-            />
-
-            <Typography variant="body2">
-              {item.label}
-            </Typography>
-          </Box>
-        ))}
       </Box>
     </Box>
   );

@@ -1,8 +1,13 @@
 import React, { useRef, useState, useMemo, useLayoutEffect, useCallback } from "react";
 import Checkbox from "@mui/material/Checkbox";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import ListItemText from "@mui/material/ListItemText";
 import { useMediaQuery, useTheme } from "@mui/material";
 import { LineChart, lineClasses } from "@mui/x-charts/LineChart";
-import { ChartsReferenceLine } from "@mui/x-charts/ChartsReferenceLine";
 import { axisClasses } from "@mui/x-charts/ChartsAxis";
 
 // ---- Data ---------------------------------------------------------------
@@ -33,73 +38,11 @@ const cbSx = {
   "&.MuiCheckbox-indeterminate": { color: "#2c6e9b" },
 };
 
-// ---- Side panel ---------------------------------------------------------
-function SidePanel({ selected, onToggle, onToggleAll, focus, onFocus }) {
-  const allChecked = selected.length === PANEL_ORDER.length;
-  const someChecked = selected.length > 0 && !allChecked;
-  const rowSx = {
-    display: "flex",
-    alignItems: "center",
-    fontSize: 13,
-    color: "#333",
-    cursor: "pointer",
-    userSelect: "none",
-  };
-  return (
-    <div style={{ width: 330, flexShrink: 0 }}>
-      {/* Sector filter */}
-      <div style={{ border: "1px solid #d9d9d9", padding: "8px 12px", marginBottom: 10 }}>
-        <div style={{ fontSize: 13, color: "#5a5a5a", marginBottom: 4 }}>Sector</div>
-        <label style={rowSx}>
-          <Checkbox size="small" sx={cbSx} checked={allChecked} indeterminate={someChecked} onChange={onToggleAll} />
-          (All)
-        </label>
-        {PANEL_ORDER.map((s) => (
-          <label key={s} style={rowSx}>
-            <Checkbox size="small" sx={cbSx} checked={selected.includes(s)} onChange={() => onToggle(s)} />
-            {s}
-          </label>
-        ))}
-      </div>
-
-      {/* Survey highlight legend */}
-      <div style={{ border: "1px solid #d9d9d9", padding: "8px 12px" }}>
-        <div style={{ fontSize: 13, color: "#5a5a5a", marginBottom: 6 }}>Survey</div>
-        {SURVEYS.map((s) => {
-          const dim = focus && focus !== s.key;
-          return (
-            <div
-              key={s.key}
-              onClick={() => onFocus(s.key)}
-              title="Click to highlight this survey"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                padding: "3px 6px",
-                margin: "1px -6px",
-                fontSize: 13,
-                cursor: "pointer",
-                userSelect: "none",
-                borderRadius: 3,
-                background: focus === s.key ? "#eef3f8" : "transparent",
-                opacity: dim ? 0.4 : 1,
-              }}
-            >
-              <span style={{ width: 13, height: 13, background: s.color, marginRight: 8 }} />
-              <span style={{ fontWeight: focus === s.key ? 600 : 400 }}>{s.label}</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-
 const MARGIN = { top: 30, right: 90, bottom: 50, left: 210 };
 const HEIGHT = 560;
-const MIN_WIDTH = 380;
-const X_TICKS = [0, 20, 40, 60, 80, 100];
+const MIN_WIDTH = 600;
+const X_MAX = 140;
+const X_TICKS = [0, 20, 40, 60, 80, 100, 120, 140];
 
 export default function DumbbellChart() {
   const theme = useTheme();
@@ -121,9 +64,7 @@ export default function DumbbellChart() {
 
   const toggle = (s) =>
     setSelected((p) => (p.includes(s) ? p.filter((x) => x !== s) : [...p, s]));
-  const toggleAll = () =>
-    setSelected((p) => (p.length === PANEL_ORDER.length ? [] : [...PANEL_ORDER]));
-  const onFocus = (key) => setFocus((prev) => (prev === key ? null : key));
+  const onFocus = (key) => setFocus(key || null);
 
   const rows = useMemo(() => CHART_ORDER.filter((s) => selected.includes(s)), [selected]);
 
@@ -189,7 +130,7 @@ export default function DumbbellChart() {
   const plotBottom = chartHeight - margin.bottom;
   const plotW = Math.max(1, plotRight - plotLeft);
 
-  const xScale = (v) => plotLeft + (v / 100) * plotW;
+  const xScale = (v) => plotLeft + (v / X_MAX) * plotW;
   const rowH = (plotBottom - plotTop) / Math.max(rows.length, 1);
   const cy = (i) => plotTop + rowH * (i + 0.5);
 
@@ -255,9 +196,9 @@ export default function DumbbellChart() {
     <div
       style={{
         display: "flex",
-        flexDirection: isMobile ? "column" : "row",
+        flexDirection: "column",
         gap: 16,
-        alignItems: "flex-start",
+        alignItems: "stretch",
         fontFamily: "Arial, Helvetica, sans-serif",
         background: "#fff",
         color: "#333",
@@ -265,18 +206,60 @@ export default function DumbbellChart() {
         boxSizing: "border-box",
       }}
     >
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 16,
+          alignItems: "center",
+          width: "100%",
+          justifyContent: "flex-start",
+        }}
+      >
+        <FormControl sx={{ minWidth: 280, flex: "1 1 280px" }} size="small">
+          <InputLabel id="sector-select-label">Sector</InputLabel>
+          <Select
+            labelId="sector-select-label"
+            multiple
+            value={selected}
+            input={<OutlinedInput label="Sector" />}
+            renderValue={(selectedValues) => selectedValues.join(", ")}
+            onChange={(event) => {
+              const value = event.target.value;
+              setSelected(typeof value === "string" ? value.split(",") : value);
+            }}
+          >
+            {PANEL_ORDER.map((sector) => (
+              <MenuItem key={sector} value={sector}>
+                <Checkbox checked={selected.includes(sector)} />
+                <ListItemText primary={sector} />
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl sx={{ minWidth: 180, flex: "0 1 180px" }} size="small">
+          <InputLabel id="survey-select-label">Survey</InputLabel>
+          <Select
+            labelId="survey-select-label"
+            value={focus || ""}
+            label="Survey"
+            onChange={(event) => onFocus(event.target.value)}
+          >
+            <MenuItem value="">
+              <em>All</em>
+            </MenuItem>
+            {SURVEYS.map((survey) => (
+              <MenuItem key={survey.key} value={survey.key}>
+                {survey.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </div>
+
       {/* Chart area */}
-      <div ref={containerRef} style={{ flex: 1, minWidth: 0, overflow: "hidden", position: "relative", width: "100%" }}>
-        {/*
-          LineChart from MUI X Charts:
-          - xAxis: linear 0-100 with an explicit `data` array (every sector's
-            two endpoints) so series can position points by index
-          - yAxis: numeric 0..rows.length, hidden (we draw sector labels ourselves)
-          - series: per-sector gray connectors (connectNulls bridges their two
-            endpoints) plus two dots-only series (nfhs4 = blue, nfhs5 = orange)
-          - margin: mirrors our MARGIN constant so pixel math stays in sync
-          - skipAnimation keeps it snappy
-        */}
+      <div ref={containerRef} style={{ width: "100%", minWidth: 0, overflow: "hidden", position: "relative" }}>
         <LineChart
           width={width}
           height={chartHeight}
@@ -286,7 +269,7 @@ export default function DumbbellChart() {
             {
               data: xValues,
               min: 0,
-              max: 100,
+              max: X_MAX,
               tickNumber: X_TICKS.length,
               label: "Value",
               labelStyle: { fontSize: 13, fill: "#5a5a5a" },
@@ -423,17 +406,6 @@ export default function DumbbellChart() {
             );
           })}
         </svg>
-      </div>
-
-      {/* Side panel */}
-      <div style={{ width: isMobile ? "100%" : 330, flexShrink: 0 }}>
-        <SidePanel
-          selected={selected}
-          onToggle={toggle}
-          onToggleAll={toggleAll}
-          focus={focus}
-          onFocus={onFocus}
-        />
       </div>
     </div>
   );

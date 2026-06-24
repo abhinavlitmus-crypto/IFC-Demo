@@ -3,6 +3,7 @@ import "./IfcDemoPage.css"
 import SectorBarChart from "../components/BarChart"
 import DumbbellChart from "../components/SimpleLineChart"
 import SlopeChart from "../components/SlopeChart"
+// import LineOverview from "../components/LineChart.component"
 
 export const IfcDemoPage = () => {
   const [active, setActive] = useState("type1")
@@ -42,6 +43,8 @@ export const IfcDemoPage = () => {
         </div>
 
         <div className="ifc-chart-area">
+          {/* {active === "type1" && <LineOverview />} */}
+
           {active === "type1" && <DumbbellChart />}
           {active === "type2" && <SlopeChart />}
           {active === "type3" && <SectorBarChart />}
