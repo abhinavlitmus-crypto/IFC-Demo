@@ -19,7 +19,7 @@ export const IfcDemoPage = () => {
             className={`ifc-tab ${active === "type1" ? "active" : ""}`}
             onClick={() => setActive("type1")}
           >
-            type1
+            Dumbbell Chart
           </button>
 
           <button
@@ -28,7 +28,7 @@ export const IfcDemoPage = () => {
             className={`ifc-tab ${active === "type2" ? "active" : ""}`}
             onClick={() => setActive("type2")}
           >
-            type2
+            Slope Chart
           </button>
 
           <button
@@ -37,7 +37,7 @@ export const IfcDemoPage = () => {
             className={`ifc-tab ${active === "type3" ? "active" : ""}`}
             onClick={() => setActive("type3")}
           >
-            type3
+            Bar Chart
           </button>
         </div>
 
@@ -52,11 +52,4 @@ export const IfcDemoPage = () => {
 }
 
 
-
-
-// export const IfcDemoPage = () => {
-//   return (
-//     <div><DumbbellChart /></div>
-//   )
-// }
 

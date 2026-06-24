@@ -1,7 +1,7 @@
-import React, { useRef, useState, useMemo, useLayoutEffect } from "react";
+import React, { useRef, useState, useMemo, useLayoutEffect, useCallback } from "react";
 import Checkbox from "@mui/material/Checkbox";
 import { useMediaQuery, useTheme } from "@mui/material";
-import { ScatterChart } from "@mui/x-charts/ScatterChart";
+import { LineChart, lineClasses } from "@mui/x-charts/LineChart";
 import { ChartsReferenceLine } from "@mui/x-charts/ChartsReferenceLine";
 import { axisClasses } from "@mui/x-charts/ChartsAxis";
 
@@ -95,19 +95,6 @@ function SidePanel({ selected, onToggle, onToggleAll, focus, onFocus }) {
   );
 }
 
-// ---- Custom connecting-line overlay via ScatterChart's "overlay" slot ----
-// MUI X Charts ScatterChart renders dots via series; we draw the dumbbell
-// connector lines and value labels using the `axisContent` customisation
-// slot pattern — specifically a custom SVG layer rendered inside the chart's
-// <svg> via the `slots.overlay` escape hatch is NOT available on ScatterChart,
-// so instead we use a composition approach:
-//   1. ScatterChart renders the two dot series (nfhs4, nfhs5).
-//   2. We wrap it in a `position: relative` container.
-//   3. A second <svg> is absolutely positioned on top; it draws the
-//      connecting lines AND value labels using computed pixel positions
-//      that mirror the ScatterChart's internal scale.
-// This is the idiomatic MUI X Charts "custom layer" pattern when you need
-// to draw elements the library doesn't expose natively.
 
 const MARGIN = { top: 30, right: 90, bottom: 50, left: 210 };
 const HEIGHT = 560;
@@ -140,6 +127,58 @@ export default function DumbbellChart() {
 
   const rows = useMemo(() => CHART_ORDER.filter((s) => selected.includes(s)), [selected]);
 
+  // Keep the latest `rows` available to the (stable) tooltip component without
+  // re-creating it on every render.
+  const rowsRef = useRef(rows);
+  rowsRef.current = rows;
+
+  // ---- Custom tooltip ---------------------------------------------------
+  // The series encode each point's ROW INDEX as its y-value (positioning
+  // trick), not the survey value — so the default axis tooltip prints those
+  // positional indices and the gray connector series, which looks like the
+  // "same value on different points". With trigger:"item" only the hovered
+  // dot reports, and we look up the real value from DATA here. Connector
+  // series (gray lines) are ignored so they never appear in the tooltip.
+  const TooltipContent = useCallback((props) => {
+    const { itemData, series } = props;
+    const dataIndex = itemData?.dataIndex;
+    if (dataIndex == null) return null;
+
+    const id = series?.id;
+    if (id !== "nfhs4" && id !== "nfhs5") return null; // skip gray connectors
+
+    const sector = rowsRef.current[Math.floor(dataIndex / 2)];
+    if (!sector) return null;
+
+    const isN4 = id === "nfhs4";
+    const value = isN4 ? DATA[sector].nfhs4 : DATA[sector].nfhs5;
+    const color = isN4 ? COLOR4 : COLOR5;
+    const label = isN4 ? "nfhs-4" : "nfhs-5";
+
+    return (
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #d9d9d9",
+          borderRadius: 4,
+          padding: "6px 10px",
+          fontSize: 12,
+          fontFamily: "Arial, Helvetica, sans-serif",
+          color: "#333",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+          whiteSpace: "nowrap",
+        }}
+      >
+        <div style={{ fontWeight: 600, marginBottom: 4 }}>{sector}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ width: 10, height: 10, background: color, borderRadius: "50%" }} />
+          <span>{label}</span>
+          <span style={{ marginLeft: 14, fontWeight: 600 }}>{value.toFixed(2)}</span>
+        </div>
+      </div>
+    );
+  }, []);
+
   const chartHeight = isMobile ? 420 : HEIGHT;
   const margin = isMobile ? { top: 30, right: 70, bottom: 50, left: 150 } : MARGIN;
 
@@ -157,18 +196,60 @@ export default function DumbbellChart() {
   const surveyOp = (key) => (!focus || focus === key ? 1 : FADED);
   const lineOp = focus ? 0.3 : 1;
 
-  // ScatterChart series: one per survey; y encodes the row index
-  // We use yAxis as a numeric 0‥rows.length axis (hidden) and map
-  // each sector row to a y value of i + 0.5, then hide the default
-  // y-axis tick labels and draw our own sector labels in the overlay SVG.
-  const series4 = useMemo(
-    () => rows.map((sector, i) => ({ id: `${sector}-4`, x: DATA[sector].nfhs4, y: i })),
+  const xValues = useMemo(
+    () => rows.flatMap((sector) => [DATA[sector].nfhs4, DATA[sector].nfhs5]),
     [rows]
   );
-  const series5 = useMemo(
-    () => rows.map((sector, i) => ({ id: `${sector}-5`, x: DATA[sector].nfhs5, y: i })),
-    [rows]
-  );
+
+  const series = useMemo(() => {
+    const len = rows.length * 2;
+    const blank = () => new Array(len).fill(null);
+
+    const data4 = blank();
+    const data5 = blank();
+    rows.forEach((_, i) => {
+      data4[2 * i] = i;
+      data5[2 * i + 1] = i;
+    });
+
+    const connectorColor = lineOp < 1 ? "rgba(154, 154, 154, 0.3)" : LINE_C;
+    const connectors = rows.map((sector, i) => {
+      const data = blank();
+      data[2 * i] = i;
+      data[2 * i + 1] = i;
+      return {
+        type: "line",
+        id: `connector-${sector}`,
+        data,
+        color: connectorColor,
+        connectNulls: true,
+        showMark: false,
+        disableHighlight: true,
+      };
+    });
+
+    return [
+      ...connectors,
+      {
+        type: "line",
+        id: "nfhs4",
+        label: "nfhs-4",
+        data: data4,
+        color: COLOR4,
+        showMark: true,
+        disableHighlight: true,
+      },
+      {
+        type: "line",
+        id: "nfhs5",
+        label: "nfhs-5",
+        data: data5,
+        color: COLOR5,
+        showMark: true,
+        disableHighlight: true,
+      },
+    ];
+  }, [rows, lineOp]);
 
   return (
     <div
@@ -187,20 +268,23 @@ export default function DumbbellChart() {
       {/* Chart area */}
       <div ref={containerRef} style={{ flex: 1, minWidth: 0, overflow: "hidden", position: "relative", width: "100%" }}>
         {/*
-          ScatterChart from MUI X Charts:
-          - xAxis: linear 0-100, provides gridlines + tick labels
+          LineChart from MUI X Charts:
+          - xAxis: linear 0-100 with an explicit `data` array (every sector's
+            two endpoints) so series can position points by index
           - yAxis: numeric 0..rows.length, hidden (we draw sector labels ourselves)
-          - series: two scatter series (nfhs4 = blue, nfhs5 = orange)
+          - series: per-sector gray connectors (connectNulls bridges their two
+            endpoints) plus two dots-only series (nfhs4 = blue, nfhs5 = orange)
           - margin: mirrors our MARGIN constant so pixel math stays in sync
-          - disableAxisListener / skipAnimation keep it snappy
+          - skipAnimation keeps it snappy
         */}
-        <ScatterChart
+        <LineChart
           width={width}
           height={chartHeight}
           margin={margin}
           skipAnimation
           xAxis={[
             {
+              data: xValues,
               min: 0,
               max: 100,
               tickNumber: X_TICKS.length,
@@ -223,28 +307,13 @@ export default function DumbbellChart() {
               disableTicks: true,
             },
           ]}
-          series={[
-            {
-              type: "scatter",
-              id: "nfhs4",
-              label: "nfhs-4",
-              data: series4,
-              color: COLOR4,
-              markerSize: 28, // reduced marker size for better layout
-              opacity: surveyOp("nfhs4"),
-            },
-            {
-              type: "scatter",
-              id: "nfhs5",
-              label: "nfhs-5",
-              data: series5,
-              color: COLOR5,
-              markerSize: 28,
-              opacity: surveyOp("nfhs5"),
-            },
-          ]}
+          series={series}
           // Hide the built-in legend (we use our own SidePanel legend)
           legend={{ hidden: true }}
+          // Per-item tooltip (not axis) so only the hovered dot reports its real value
+          tooltip={{ trigger: "item" }}
+          // Custom tooltip content that reads the real value from DATA
+          slots={{ itemContent: TooltipContent }}
           // Grid lines: vertical only (horizontal handled by border rect in overlay)
           grid={{ vertical: true, horizontal: false }}
           sx={{
@@ -261,6 +330,14 @@ export default function DumbbellChart() {
             // X-axis line
             "& .MuiChartsAxis-line": {
               stroke: AXIS_C,
+            },
+            // Connector lines drawn at the dumbbell's stroke width
+            [`& .${lineClasses.line}`]: {
+              strokeWidth: 3,
+            },
+            // Small fixed-size marks instead of giant scatter dots
+            [`& .${lineClasses.mark}`]: {
+              r: 7,
             },
             // Remove default tooltip marker (we label dots ourselves)
             "& .MuiChartsTooltip-root": {
@@ -318,17 +395,6 @@ export default function DumbbellChart() {
                 <text x={plotLeft - 14} y={y + 4} fontSize={13} fill="#6e6e6e" textAnchor="end">
                   {sector}
                 </text>
-
-                {/* Connecting line */}
-                <line
-                  x1={x4}
-                  x2={x5}
-                  y1={y}
-                  y2={y}
-                  stroke={LINE_C}
-                  strokeWidth={3}
-                  opacity={lineOp}
-                />
 
                 {/* nfhs-4 value label (left of blue dot) */}
                 <text
