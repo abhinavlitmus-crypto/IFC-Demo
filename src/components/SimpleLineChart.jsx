@@ -19,7 +19,7 @@ const DATA = {
 const CHART_ORDER = ["Urban", "Rural + Urban (Combined)", "Rural"]; // top → bottom
 const PANEL_ORDER = ["Rural", "Rural + Urban (Combined)", "Urban"]; // checkbox list
 
-const COLOR4 = "#4e79a7";
+const COLOR4 = "#4f6d9e";
 const COLOR5 = "#f28e2b";
 const LINE_C = "#9a9a9a";
 const TICK_TXT = "#8a8a8a";

@@ -11,7 +11,13 @@ import {
 import { LineChart } from "@mui/x-charts/LineChart";
 import { useXScale, useYScale } from "@mui/x-charts/hooks";
 
+// Real categories used for labels / scale lookups
 const CATEGORIES = ["nfhs-4", "nfhs-5"];
+
+// Padded axis data: the leading/trailing "" entries push the two real
+// categories OFF the axis edges (to ~1/3 and ~2/3 of the plot), giving the
+// left-hand markers room so their labels never collide with the y-axis numbers.
+const X_AXIS_DATA = ["", "nfhs-4", "nfhs-5", ""];
 
 const ALL_SERIES = [
   {
@@ -35,6 +41,7 @@ const ALL_SERIES = [
 ];
 
 const VALUE_TXT = "#3b3b3b";
+const MARK_R = 11;
 
 function ValueLabels({ series }) {
   const xScale = useXScale();
@@ -50,18 +57,37 @@ function ValueLabels({ series }) {
           if (cx == null || cy == null) return null;
 
           const isLeft = i === 0;
-          const xOffset = isLeft ? -18 : 18;
+
+          // Label placement (this is the collision fix):
+          //  - nfhs-4 (left): sit the label BELOW the marker. With the points
+          //    inset from the axis, a centered label below clears the y-axis
+          //    tick numbers entirely.
+          //  - nfhs-5 (right): sit the label to the RIGHT of the marker.
+          const labelX = isLeft ? cx : cx + MARK_R + 8;
+          const labelY = isLeft ? cy + MARK_R + 18 : cy + 5;
+          const anchor = isLeft ? "middle" : "start";
 
           return (
-            <text
-              key={`${s.id}-${i}`}
-              x={isLeft ? cx + xOffset : cx + xOffset}
-              y={cy + 5}
-              fontSize={14}
-              fill={VALUE_TXT}
-            >
-              {val.toFixed(2)}
-            </text>
+            <g key={`${s.id}-${i}`}>
+              {/* Uniform filled circle marker (matches reference image) */}
+              <circle
+                cx={cx}
+                cy={cy}
+                r={MARK_R}
+                fill={s.color}
+                stroke="#fff"
+                strokeWidth={1.5}
+              />
+              <text
+                x={labelX}
+                y={labelY}
+                fontSize={14}
+                fill={VALUE_TXT}
+                textAnchor={anchor}
+              >
+                {val.toFixed(2)}
+              </text>
+            </g>
           );
         })
       )}
@@ -176,21 +202,24 @@ export default function SlopeChart({ height = 560 }) {
           height={isMobile ? 420 : height}
           margin={{
             left: isMobile ? 70 : 60,
-            right: isMobile ? 50 : 60,
+            right: isMobile ? 60 : 70,
             top: 20,
             bottom: 40,
           }}
           series={filteredSeries.map((s) => ({
             id: s.id,
             label: s.label,
-            data: s.data,
+            // Pad with nulls to align with the inset (padded) x-axis. The line
+            // is still drawn only between the two real points.
+            data: [null, s.data[0], s.data[1], null],
             color: s.color,
             curve: "linear",
-            showMark: true,
+            showMark: false, // we draw our own uniform circle markers
+            connectNulls: false,
           }))}
           xAxis={[
             {
-              data: CATEGORIES,
+              data: X_AXIS_DATA,
               scaleType: "point",
             },
           ]}
@@ -209,11 +238,6 @@ export default function SlopeChart({ height = 560 }) {
             },
           }}
           sx={{
-            "& .MuiMarkElement-root": {
-              r: 10,
-              stroke: "#fff",
-              strokeWidth: 2,
-            },
             "& .MuiLineElement-root": {
               strokeWidth: 3,
             },
@@ -225,7 +249,6 @@ export default function SlopeChart({ height = 560 }) {
           <ValueLabels series={filteredSeries} />
         </LineChart>
       </Box>
-
     </Box>
   );
 }
