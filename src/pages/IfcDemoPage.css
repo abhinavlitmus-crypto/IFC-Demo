@@ -2,11 +2,24 @@
 .ifc-page {
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 48px 16px;
   background: radial-gradient(ellipse at 10% 10%, rgba(3,102,214,0.08), transparent 15%), linear-gradient(135deg, #f6f9ff 0%, #fffefe 100%);
   font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+
+.ifc-prefilters {
+  width: 100%;
+  max-width: 1100px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 0 0;
+  align-items: flex-start;
+  justify-content: flex-start;
 }
 
 .ifc-card {
@@ -39,7 +52,7 @@
 
 .ifc-tab {
   padding: 8px 18px;
-  border-radius: 999px;
+  border-radius: 5px;
   border: 1px solid rgba(6, 24, 69, 0.06);
   background: transparent;
   color: #0f1724;
@@ -79,11 +92,30 @@
   justify-content: center;
 }
 
+.ifc-content {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.ifc-side {
+  flex: 0 0 320px;
+}
+
+.ifc-content > .ifc-card {
+  flex: 1 1 0;
+}
+
 /* Responsive tweaks */
 @media (max-width: 900px) {
   .ifc-card {
     padding: 18px;
     margin: 0 12px;
+  }
+  .ifc-prefilters {
+    margin-bottom: 16px;
+    gap: 12px;
   }
   .ifc-tabs {
     flex-wrap: wrap;

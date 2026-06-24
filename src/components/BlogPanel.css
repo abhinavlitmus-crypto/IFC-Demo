@@ -1,0 +1,109 @@
+
+.ifc-content {
+  display: flex;
+  gap: 24px;
+  align-items: stretch;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.ifc-content > .ifc-blog {
+  flex: 0 0 30%;
+  max-width: 30%;
+}
+
+.ifc-content > .ifc-card {
+  flex: 1 1 70%;
+  max-width: 70%;
+  margin: 0;
+  min-width: 0; /* let charts shrink instead of overflowing the column */
+}
+
+/* Stack vertically on smaller screens */
+@media (max-width: 992px) {
+  .ifc-content {
+    flex-direction: column;
+  }
+  .ifc-content > .ifc-blog,
+  .ifc-content > .ifc-card {
+    flex-basis: auto;
+    max-width: 100%;
+  }
+}
+
+
+.ifc-blog {
+  --blog-bg: #e9edf2;          /* pale cool-blue panel        */
+  --blog-heading: #1c3354;     /* dark navy heading           */
+  --blog-text: #3c4a5e;        /* slate body text             */
+  --blog-link: #2a6cb8;        /* blue underlined links       */
+  --blog-button: #285a8c;      /* CTA button                  */
+  --blog-button-hover: #1d456b;
+
+  box-sizing: border-box;
+  background: var(--blog-bg);
+  border-radius: 12px;
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ifc-blog__title {
+  margin: 0;
+  color: var(--blog-heading);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 28px;
+  line-height: 1.22;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.ifc-blog__body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ifc-blog__body p {
+  margin: 0;
+  color: var(--blog-text);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.ifc-blog__link {
+  color: var(--blog-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.ifc-blog__link:hover {
+  color: var(--blog-button-hover);
+}
+
+.ifc-blog__cta {
+  align-self: flex-start;
+  margin-top: 8px;
+  border: none;
+  cursor: pointer;
+  background: var(--blog-button);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 12px 22px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s ease;
+}
+.ifc-blog__cta:hover {
+  background: var(--blog-button-hover);
+}
+.ifc-blog__cta span {
+  font-size: 16px;
+  line-height: 1;
+}
