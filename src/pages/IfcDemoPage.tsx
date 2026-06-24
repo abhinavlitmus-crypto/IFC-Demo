@@ -92,7 +92,7 @@ export const IfcDemoPage = () => {
           background: "#fff",
         }}
       >
-        <h1>NHFS</h1>
+        <h1>NFHS</h1>
 
         <div className="ifc-content">
           <div className="ifc-side">
